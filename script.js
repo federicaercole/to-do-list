@@ -1,18 +1,22 @@
-//mettere i todo in prima pagina come liste
+//"aggiungi categoria" solo nella pagina, non nel singolo todo
+//filtra i todo per categorie
 //Possibilità di editare un todo
-//Cancellare un todo (posso riciclare quello che ho già fatto)
 //Segnare un todo come fatto/non fatto
 //Spostare todo fatto dietro a quelli da fare, se si toggla un todo già fatto in non fatto si sposta sotto quelli da fare (vedi app promemoria)
 //Aprire finestra con un todo-->secondo me il modal bisognerebbe farlo interamente in javascript! modal per vedere dettagli e modal inserisci todo
+//validazione form
+
+let todos = [];
+
 
 //DOM Stuff
 const newTodobtn = document.querySelector(".new-todo");
 const todoContainer = document.querySelector(".todo-container");
+const ul = document.querySelector(".todo-container ul")
 const modal = document.querySelector(".modal");
 const overlay = document.querySelector(".overlay");
 const btnCloseModal = document.querySelector(".close");
 const btnAddTodo = document.querySelector(".add-todo");
-const dueDate = document.querySelector("#date");
 
 function createCardElement(el, content) {
     const element = document.createElement(el);
@@ -29,10 +33,37 @@ function createTodoCard(newTodo) {
     article.appendChild(createCardElement("p", `${newTodo.dueDate}`));
     article.appendChild(createCardElement("p", `${newTodo.priority}`));
     article.appendChild(createCardElement("p", `${newTodo.category}`));
+    return article;
+}
+
+function todoHome(newTodo) {
+    const li = document.createElement("li");
+    ul.appendChild(li);
+
+    const checkbox = document.createElement("input");
+    checkbox.setAttribute("type", "checkbox");
+    li.appendChild(checkbox);
+
+    li.appendChild(createCardElement("span", `${newTodo.title}`));
+    li.appendChild(createCardElement("span", `${newTodo.dueDate}`));
+    createRemoveBtn(li, newTodo);
+
+
+}
+
+function createRemoveBtn(li, todo) {
+    const btnRemove = createCardElement("button", "Remove Todo");
+    li.appendChild(btnRemove);
+    btnRemove.addEventListener("click", function () { removeTodo(li, todo) });
+}
+
+function removeTodo(li, todo) {
+    li.remove(`li`);
+    todos.splice(todos.indexOf(todo), 1);
 }
 
 function showTodos() {
-    todos.map(element => createTodoCard(element));
+    todos.map(element => todoHome(element));
 }
 
 //Evento al bottone per scrivere una nuova nota
@@ -54,7 +85,7 @@ function closeTodoDialog(event) {
 
 btnAddTodo.addEventListener("click", event => {
     event.preventDefault();
-    const newTodo = addTodotoArray(title.value, desc.value, dueDate.value, priority.value, category.value);
+    const newTodo = addTodotoArray(title.value, desc.value, date.value, priority.value, category.value);
     createTodoCard(newTodo);
 });
 
@@ -71,8 +102,6 @@ class Todo {
 
     //funzione che tiene conto dello status fatto/non fatto
 }
-
-let todos = [];
 let categories = ["Personal", "Work"]
 
 function addTodotoArray(title, desc, dueDate, priority, category) {

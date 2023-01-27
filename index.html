@@ -5,13 +5,47 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Todo List</title>
 </head>
 
 <body>
+    <div class="modal hidden">
+        <button type="button" class="close"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                viewBox="0 0 32 32">
+                <path
+                    d="M16 0c-8.837 0-16 7.163-16 16s7.163 16 16 16 16-7.163 16-16-7.163-16-16-16zM16 29c-7.18 0-13-5.82-13-13s5.82-13 13-13 13 5.82 13 13-5.82 13-13 13z">
+                </path>
+                <path d="M21 8l-5 5-5-5-3 3 5 5-5 5 3 3 5-5 5 5 3-3-5-5 5-5z"></path>
+            </svg><span class="visually-hidden">Close</span></button>
+        <h2>Add a new book</h2>
+        <form>
+            <label for="title">Todo title</label>
+            <input type="text" id="title">
+            <label for="desc">Description</label>
+            <input type="text" id="desc">
+            <label for="date">Due Date</label>
+            <input type="date" id="date">
+            <label for="priority">Priority</label>
+            <select id="priority">
+                <option value="no-priority">No priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+            <label for="category">Category</label>
+            <select id="category">
+            </select>
+            <button type="submit" class="add-todo">Add Todo</button>
+        </form>
+    </div>
+
+    <div class="overlay hidden"></div>
     <main>
         <h1>Todo App</h1>
-        <section class="todo-container"></section>
+        <section class="todo-container">
+            <ul></ul>
+        </section>
         <button type="button" class="new-todo">New Todo</button>
     </main>
 
