@@ -1,9 +1,7 @@
-//"aggiungi categoria" solo nella pagina, non nel singolo todo
 //filtra i todo per categorie
 //Possibilità di editare un todo
 //Segnare un todo come fatto/non fatto
 //Spostare todo fatto dietro a quelli da fare, se si toggla un todo già fatto in non fatto si sposta sotto quelli da fare (vedi app promemoria)
-//Aprire finestra con un todo-->secondo me il modal bisognerebbe farlo interamente in javascript! modal per vedere dettagli e modal inserisci todo
 //validazione form
 
 let todos = [];
@@ -17,11 +15,11 @@ class FormElements {
         this.type = type;
         this.id = id;
     }
-
 }
 
 //DOM Stuff
 const newTodobtn = document.querySelector(".new-todo");
+const newCatbtn = document.querySelector(".new-category");
 const todoContainer = document.querySelector(".todo-container");
 const ul = document.querySelector(".todo-container ul");
 const body = document.querySelector("body");
@@ -29,6 +27,39 @@ const modal = document.createElement("div");
 modal.setAttribute("class", "modal");
 const overlay = document.createElement("div");
 overlay.setAttribute("class", "overlay");
+
+newCatbtn.addEventListener("click", event => {
+    openDialog(event);
+    createFormCategory();
+});
+
+function createFormCategory() {
+    modal.appendChild(createCardElement("h2", "Add a New Category"));
+
+    const form = document.createElement("form");
+    modal.appendChild(form);
+
+    const newCat = new FormElements("label", "New Category", "new-category", "input", "text", "new-category");
+    createFormElement(newCat, form);
+    createNewCategoryBtn(form);
+
+};
+
+function createNewCategoryBtn(form) {
+    const btnAddCat = form.appendChild(createCardElement("button", "Add Category"));
+    btnAddCat.type = "submit";
+
+    btnAddCat.addEventListener("click", event => {
+        event.preventDefault();
+        addNewCategory(document.querySelector("#new-category").value);
+    });
+
+}
+
+function addNewCategory(cat) {
+    categories.push(cat);
+    return categories;
+}
 
 function createCardElement(el, content) {
     const element = document.createElement(el);
@@ -190,11 +221,6 @@ function listToOption(list, id) {
         option.value = `${element}`;
         select.appendChild(option);
     });
-}
-
-function addNewCategory(cat) {
-    categories.push(cat);
-    return categories;
 }
 
 //Elemento di prova
