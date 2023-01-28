@@ -1,7 +1,5 @@
 //filtra i todo per categorie
 //Possibilità di editare un todo
-//Segnare un todo come fatto/non fatto
-//Spostare todo fatto dietro a quelli da fare, se si toggla un todo già fatto in non fatto si sposta sotto quelli da fare (vedi app promemoria)
 //validazione form
 
 let todos = [];
@@ -87,11 +85,44 @@ function todoHome(newTodo) {
     checkbox.setAttribute("type", "checkbox");
     li.appendChild(checkbox);
 
+    checkbox.checked = newTodo.status;
+
+    checkbox.addEventListener("change", () => {
+        toggleTodo(newTodo);
+
+        const li = [...document.querySelectorAll("li")];
+        li.map(element => element.remove());
+
+        showTodos();
+    });
+
     li.appendChild(createCardElement("span", `${newTodo.title}`));
     li.appendChild(createCardElement("span", `${newTodo.dueDate}`));
     createRemoveBtn(li, newTodo);
     createEditBtn(li);
+}
 
+function toggleTodo(todo) {
+    todo.toggleStatus();
+    todos.splice(todos.indexOf(todo), 1);
+    if (todo.status) {
+        todos.push(todo);
+
+    } else {
+        todos.unshift(todo);
+    }
+}
+
+function sortTodos() {
+    todos.sort((a, b) => {
+        if ((a.dueDate === b.dueDate) && a.status !== true && b.status !== true) {
+            return 0;
+        } else if ((a.dueDate > b.dueDate) && a.status !== true && b.status !== true) {
+            return 1;
+        } else {
+            return -1;
+        }
+    })
 }
 
 function createRemoveBtn(li, todo) {
@@ -119,11 +150,12 @@ function createCloseBtn() {
 }
 
 function removeTodo(li, todo) {
-    li.remove(`li`);
+    li.remove();
     todos.splice(todos.indexOf(todo), 1);
 }
 
 function showTodos() {
+    sortTodos();
     todos.map(element => todoHome(element));
 }
 
@@ -202,6 +234,11 @@ class Todo {
         this.status = status || false;
     }
 
+    toggleStatus() {
+        this.status = !this.status;
+        return this.status;
+    }
+
     //funzione che tiene conto dello status fatto/non fatto
 }
 let categories = ["Personal", "Work"]
@@ -224,7 +261,13 @@ function listToOption(list, id) {
 }
 
 //Elemento di prova
-addTodotoArray("Prova", "descrizione", "domani", "alta");
+addTodotoArray("Prova", "descrizione", "2023-12-01", "alta");
+addTodotoArray("Prova3", "descrizione", "2023-10-25", "alta");
+addTodotoArray("Prova5", "descrizione", "", "alta");
+addTodotoArray("Prova2", "descrizione", "2023-10-08", "alta");
+addTodotoArray("Prova4", "descrizione", "", "alta");
+addTodotoArray("Prova6", "descrizione", "", "alta");
+addTodotoArray("Prova7", "descrizione", "2023-10-08", "alta");
 
 showTodos();
 // showCategories();
