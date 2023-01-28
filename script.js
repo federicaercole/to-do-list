@@ -1,8 +1,10 @@
 //filtra i todo per categorie
 //Possibilità di editare un todo
+//editare o cancellare categorie
 //validazione form
 
 let todos = [];
+let filteredTodos = [];
 
 class FormElements {
     constructor(element, textLabel, forLabel, input, type, id) {
@@ -13,6 +15,15 @@ class FormElements {
         this.type = type;
         this.id = id;
     }
+}
+
+class Buttons {
+    constructor(element, textButton, type) {
+        this.element = element;
+        this.textButton = textButton;
+        this.type = type;
+    }
+
 }
 
 //DOM Stuff
@@ -59,6 +70,34 @@ function addNewCategory(cat) {
     return categories;
 }
 
+function showCategories() {
+    const categoriesHTML = document.querySelector(".categories");
+
+    const allProjects = categoriesHTML.appendChild(createCardElement("button", "All projects"));
+    allProjects.type = "button";
+
+    allProjects.addEventListener("click", () => {
+        todoContainer.classList.remove("filtered");
+        ul.replaceChildren();
+        showTodos();
+    })
+
+    categories.map(category => {
+        const catBtn = categoriesHTML.appendChild(createCardElement("button", `${category}`));
+        catBtn.type = "button";
+
+        catBtn.addEventListener("click", event => {
+            filteredTodos = todos.filter(todo => {
+                return todo.category === event.target.textContent;
+            });
+            ul.replaceChildren();
+            todoContainer.classList.add("filtered");
+            showTodos();
+        });
+    });
+
+}
+
 function createCardElement(el, content) {
     const element = document.createElement(el);
     element.textContent = content;
@@ -89,10 +128,7 @@ function todoHome(newTodo) {
 
     checkbox.addEventListener("change", () => {
         toggleTodo(newTodo);
-
-        const li = [...document.querySelectorAll("li")];
-        li.map(element => element.remove());
-
+        ul.replaceChildren();
         showTodos();
     });
 
@@ -104,17 +140,25 @@ function todoHome(newTodo) {
 
 function toggleTodo(todo) {
     todo.toggleStatus();
-    todos.splice(todos.indexOf(todo), 1);
-    if (todo.status) {
-        todos.push(todo);
-
+    if (todoContainer.classList.contains("filtered")) {
+        filteredTodos.splice(filteredTodos.indexOf(todo), 1);
+        if (todo.status) {
+            filteredTodos.push(todo);
+        } else {
+            filteredTodos.unshift(todo);
+        }
     } else {
-        todos.unshift(todo);
+        todos.splice(todos.indexOf(todo), 1);
+        if (todo.status) {
+            todos.push(todo);
+        } else {
+            todos.unshift(todo);
+        }
     }
 }
 
-function sortTodos() {
-    todos.sort((a, b) => {
+function sortTodos(array) {
+    array.sort((a, b) => {
         if ((a.dueDate === b.dueDate) && a.status !== true && b.status !== true) {
             return 0;
         } else if ((a.dueDate > b.dueDate) && a.status !== true && b.status !== true) {
@@ -155,8 +199,14 @@ function removeTodo(li, todo) {
 }
 
 function showTodos() {
-    sortTodos();
-    todos.map(element => todoHome(element));
+    if (todoContainer.classList.contains("filtered")) {
+        sortTodos(filteredTodos);
+        filteredTodos.map(element => todoHome(element));
+    }
+    else {
+        sortTodos(todos);
+        todos.map(element => todoHome(element));
+    }
 }
 
 //Evento al bottone per scrivere una nuova nota
@@ -213,6 +263,10 @@ function createAddBtn(form) {
         event.preventDefault();
         const newTodo = addTodotoArray(title.value, desc.value, date.value, priority.value, category.value);
         todoHome(newTodo);
+
+        ul.replaceChildren();
+
+        showTodos();
     });
 }
 
@@ -261,13 +315,10 @@ function listToOption(list, id) {
 }
 
 //Elemento di prova
-addTodotoArray("Prova", "descrizione", "2023-12-01", "alta");
-addTodotoArray("Prova3", "descrizione", "2023-10-25", "alta");
-addTodotoArray("Prova5", "descrizione", "", "alta");
-addTodotoArray("Prova2", "descrizione", "2023-10-08", "alta");
-addTodotoArray("Prova4", "descrizione", "", "alta");
-addTodotoArray("Prova6", "descrizione", "", "alta");
-addTodotoArray("Prova7", "descrizione", "2023-10-08", "alta");
+addTodotoArray("Prova", "descrizione", "2023-12-01", "alta", "Personal");
+addTodotoArray("Prova3", "descrizione", "2023-10-25", "alta", "Work");
+addTodotoArray("Prova3", "descrizione", "2023-10-23", "alta", "Work");
+addTodotoArray("Prova5", "descrizione", "", "alta", "Personal");
 
 showTodos();
-// showCategories();
+showCategories();
