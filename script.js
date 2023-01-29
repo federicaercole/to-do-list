@@ -275,9 +275,13 @@ function createEditBtn(todo) {
     });
 }
 function printExistentInputs(todo) {
+    const date = document.querySelector("#date");
+    const splitDate = todo.dueDate.split("-");
+    const stringDate = `${splitDate[2]}-${splitDate[1].padStart(2, 0)}-${splitDate[0]}`;
+
     title.value = todo.title;
     desc.value = todo.desc;
-    date.value = todo.dueDate;
+    date.value = stringDate;
     priority.value = todo.priority;
     category.value = todo.category;
 }
@@ -412,7 +416,7 @@ function createForm(todo) {
 
     const dateField = document.querySelector("#date");
     dateField.addEventListener('input', function () {
-        let date = dateField.valueAsDate;
+        const date = dateField.valueAsDate;
         return date;
     });
 
