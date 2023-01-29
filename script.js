@@ -1,4 +1,3 @@
-//editare categorie
 //validazione form e messaggi di conferma
 
 let todos = [];
@@ -52,11 +51,32 @@ function printCategories() {
         const h3 = li.appendChild(createCardElement("h3", `${category}`));
         h3.setAttribute("tabindex", "0");
         h3.setAttribute("type", "button");
-        h3.addEventListener("click", event => { });
+        h3.addEventListener("click", event => {
+            li.replaceChildren();
+            li.classList.add("edit-category-modal");
+            transformCatToInput(event, h3, li);
+            const input = document.querySelector(`#${category}`);
+            const saveBtn = createSaveBtn(categories, input, category);
+            createDeleteActionBtn(saveBtn);
+        });
         createRemoveBtn(li, category);
     });
     const p = createCardElement("p", "Deleting a category deletes all the todos associated with the category!");
     ul.insertAdjacentElement('afterend', p);
+}
+
+function transformCatToInput(event, h3, li) {
+    const title = h3.textContent;
+    event.target.remove();
+    const label = createCardElement("label", title);
+    label.setAttribute("class", "visually-hidden");
+    label.setAttribute("for", title);
+    const input = document.createElement("input", title);
+    input.type = "text";
+    input.id = title;
+    input.value = title;
+    li.appendChild(label);
+    li.appendChild(input);
 }
 
 const categoriesHTML = document.querySelector(".categories");
@@ -217,6 +237,22 @@ function sortTodos(array) {
     })
 }
 
+function createDeleteActionBtn(element) {
+    const btnDelete = createCardElement("button");
+    btnDelete.type = "button";
+    const span = createCardElement("span", `Don't edit category`);
+    btnDelete.appendChild(span);
+    span.classList.add("visually-hidden");
+    element.insertAdjacentElement("afterend", btnDelete);
+
+    btnDelete.addEventListener("click", event => {
+        modal.replaceChildren();
+        openDialog(event);
+        modal.classList.add("edit");
+        printCategories();
+    });
+}
+
 function createRemoveBtn(li, element) {
     const btnRemove = createCardElement("button");
     btnRemove.type = "button";
@@ -225,7 +261,7 @@ function createRemoveBtn(li, element) {
     span.classList.add("visually-hidden");
     li.appendChild(btnRemove);
     btnRemove.addEventListener("click", function () {
-        removeElement(li, element, modal.classList.contains("edit") ? categories : todos)
+        removeElement(li, element, modal.classList.contains("edit") ? categories : todos);
     });
 }
 
@@ -246,18 +282,54 @@ function printExistentInputs(todo) {
     category.value = todo.category;
 }
 
-function createSaveBtn(todo, form) {
-    const saveBtn = createCardElement("button", "Save");
+function createSaveBtn(array, element, cat) {
+    const saveBtn = document.createElement("button");
+
     saveBtn.type = "submit";
-    form.appendChild(saveBtn);
+    if (modal.classList.contains("edit")) {
+        element.insertAdjacentElement("afterend", saveBtn);
+        const span = saveBtn.appendChild(createCardElement("span", "Save category"));
+        span.classList.add("visually-hidden");
+        saveBtn.classList.add("save");
+    } else {
+        element.appendChild(saveBtn);
+        saveBtn.textContent = "Save";
+    }
 
     saveBtn.addEventListener("click", event => {
-        const date = document.querySelector("#date");
-        todo.editTodo(title.value, desc.value, date.value, priority.value, category.value);
-        closeDialog(event);
-        ul.replaceChildren();
-        showTodos();
+        if (modal.classList.contains("edit")) {
+            const oldCat = cat;
+
+            const updatedCat = element.value;
+
+            todos.map(todo => {
+                if (todo.category === oldCat) {
+                    todo.category = updatedCat;
+                }
+            });
+
+            const indexCat = categories.indexOf(oldCat);
+            categories.splice(indexCat, 1, updatedCat);
+
+            modal.replaceChildren();
+            openDialog(event);
+            modal.classList.add("edit");
+            printCategories();
+
+            categoriesHTML.replaceChildren();
+            showCategories();
+
+            ul.replaceChildren();
+            showTodos();
+        } else {
+            const date = document.querySelector("#date");
+            array.editTodo(title.value, desc.value, date.value, priority.value, category.value);
+            closeDialog(event);
+            ul.replaceChildren();
+            showTodos();
+        }
     });
+    return saveBtn;
 }
 
 function createCloseBtn() {
