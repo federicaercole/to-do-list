@@ -157,7 +157,6 @@ li {
     row-gap: 5px;
     border-bottom: 3px solid var(--accent-color);
     padding: 30px 0;
-    /* position: relative; */
 }
 
 li h2 {
@@ -313,4 +312,9 @@ select {
 .modal .close:hover,
 .modal .close:active {
     border-color: var(--accent-color);
+}
+
+.modal ul+p {
+    margin-top: 10px;
+    margin-bottom: 0;
 }

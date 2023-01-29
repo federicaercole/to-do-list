@@ -1,4 +1,4 @@
-//editare o cancellare categorie
+//editare categorie
 //validazione form e messaggi di conferma
 
 let todos = [];
@@ -33,6 +33,27 @@ const modal = document.createElement("div");
 modal.setAttribute("class", "modal");
 const overlay = document.createElement("div");
 overlay.setAttribute("class", "overlay");
+
+
+const editCatBtn = document.querySelector(".edit-category");
+
+editCatBtn.addEventListener("click", event => {
+    openDialog(event);
+    modal.classList.add("edit");
+    printCategories();
+});
+
+function printCategories() {
+    modal.appendChild(createCardElement("h2", "Edit or delete categories"));
+    const ul = modal.appendChild(document.createElement("ul"));
+
+    categories.map(category => {
+        const li = ul.appendChild(createCardElement("li", `${category}`));
+        createRemoveBtn(li, category);
+    });
+    const p = createCardElement("p", "Deleting a category deletes all the todos associated with the category!");
+    ul.insertAdjacentElement('afterend', p);
+}
 
 const categoriesHTML = document.querySelector(".categories");
 
@@ -190,14 +211,16 @@ function sortTodos(array) {
     })
 }
 
-function createRemoveBtn(li, todo) {
+function createRemoveBtn(li, element) {
     const btnRemove = createCardElement("button");
     btnRemove.type = "button";
-    const span = createCardElement("span", `Delete ${todo.title}`);
+    const span = createCardElement("span", `Delete ${element.title || element}`);
     btnRemove.appendChild(span);
     span.classList.add("visually-hidden");
     li.appendChild(btnRemove);
-    btnRemove.addEventListener("click", function () { removeTodo(li, todo) });
+    btnRemove.addEventListener("click", function () {
+        removeElement(li, element, modal.classList.contains("edit") ? categories : todos)
+    });
 }
 
 function createEditBtn(todo) {
@@ -242,9 +265,24 @@ function createCloseBtn() {
     closeBtn.addEventListener("click", event => { closeDialog(event) });
 }
 
-function removeTodo(li, todo) {
+function removeElement(li, element, array) {
     li.remove();
-    todos.splice(todos.indexOf(todo), 1);
+    array.splice(array.indexOf(element), 1);
+
+    if (modal.classList.contains("edit")) {
+        const todosWithCategory = todos.filter(todo => {
+            return todo.category === element;
+        });
+        for (i = 0; i < todosWithCategory.length; i++) {
+            todos = todos.filter(item => {
+                return item !== todosWithCategory[i];
+            });
+        }
+        ul.replaceChildren();
+        showTodos();
+        categoriesHTML.replaceChildren();
+        showCategories();
+    }
 }
 
 function showTodos() {
@@ -332,20 +370,21 @@ function createAddBtn(form) {
 function closeDialog(event) {
     event.preventDefault();
     modal.classList.remove("add");
+    modal.classList.remove("edit");
+    modal.replaceChildren();
     body.removeChild(modal);
-    modal.innerHTML = "";
     body.removeChild(overlay);
 }
 
 //Struttura di un todo
 class Todo {
-    constructor(title, desc, dueDate, priority, category, status) {
+    constructor(title, desc, dueDate, priority, category) {
         this.title = title;
         this.desc = desc;
         this.dueDate = dueDate;
         this.priority = priority;
-        this.category = category || "Personal";
-        this.status = status || false;
+        this.category = category;
+        this.status = false;
     }
 
     toggleStatus() {
@@ -380,11 +419,12 @@ function listToOption(list, id) {
         select.appendChild(option);
     });
 }
-
+const date = new Date();
 //Elemento di prova
-addTodotoArray("Un titolo piuttosto lungo da scrivere per vedere come funziona", "descrizione", "2023-12-01", "None", "Personal");
-addTodotoArray("Prova3", "descrizione", "2023-10-23", "None", "Work");
-addTodotoArray("Prova5", "descrizione", "2023-10-23", "High", "Work", false);
+addTodotoArray("Click on todo title to see it and edit it", "This is the description of the todo. Try to edit this todo clicking the 'Edit todo' button", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+addTodotoArray("Click on the X button to delete it", "If you delete a todo it is gone forever!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+addTodotoArray("How to navigate the interface", "On the top of the page you have buttons to add a new todo, add a new category and edit categories. With the buttons in the next row you can filter your todos from different categories.", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+addTodotoArray("Click on the checkbox to mark a todo done", "Congratulations, you finished this tutorial!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
 
 showTodos();
 showCategories();
