@@ -1,5 +1,5 @@
 //editare o cancellare categorie
-//validazione form
+//validazione form e messaggi di conferma
 
 let todos = [];
 let filteredTodos = [];
@@ -49,6 +49,8 @@ function createFormCategory() {
 
     const newCat = new FormElements("label", "New Category", "new-category", "input", "text", "new-category");
     createFormElement(newCat, form);
+    const label = document.querySelector("label");
+    label.setAttribute("class", "visually-hidden");
     createNewCategoryBtn(form);
 
 };
@@ -75,9 +77,12 @@ function addNewCategory(cat) {
 function showCategories() {
     const allProjects = categoriesHTML.appendChild(createCardElement("button", "All projects"));
     allProjects.type = "button";
+    allProjects.classList.add("active");
 
     allProjects.addEventListener("click", () => {
         todoContainer.classList.remove("filtered");
+        resetButtonStatus();
+        allProjects.classList.add("active");
         ul.replaceChildren();
         showTodos();
     })
@@ -87,15 +92,22 @@ function showCategories() {
         catBtn.type = "button";
 
         catBtn.addEventListener("click", event => {
+            resetButtonStatus();
             filteredTodos = todos.filter(todo => {
                 return todo.category === event.target.textContent;
             });
             ul.replaceChildren();
             todoContainer.classList.add("filtered");
+            event.target.classList.add("active");
             showTodos();
         });
     });
 
+}
+
+function resetButtonStatus() {
+    const buttons = document.querySelectorAll(".categories button");
+    buttons.forEach(button => button.classList.remove("active"));
 }
 
 function createCardElement(el, content) {
@@ -107,9 +119,9 @@ function createCardElement(el, content) {
 function createTodoCard(newTodo) {
     modal.appendChild(createCardElement("h2", `${newTodo.title}`));
     modal.appendChild(createCardElement("p", `${newTodo.desc}`));
-    modal.appendChild(createCardElement("p", `${newTodo.dueDate}`));
-    modal.appendChild(createCardElement("p", `${newTodo.priority}`));
-    modal.appendChild(createCardElement("p", `${newTodo.category}`));
+    modal.appendChild(createCardElement("p", `Due Date: ${newTodo.dueDate}`));
+    modal.appendChild(createCardElement("p", `Priority: ${newTodo.priority}`));
+    modal.appendChild(createCardElement("p", `Category: ${newTodo.category}`));
     createEditBtn(newTodo);
 }
 
@@ -123,16 +135,28 @@ function todoHome(newTodo) {
 
     checkbox.checked = newTodo.status;
 
-    checkbox.addEventListener("change", () => {
-        toggleTodo(newTodo);
+    if (checkbox.checked === true) {
+        li.setAttribute("class", "checked");
+    }
+
+    checkbox.addEventListener("change", (event) => {
+        toggleTodo(newTodo, event, li);
         ul.replaceChildren();
         showTodos();
     });
 
-    const span = li.appendChild(createCardElement("span", `${newTodo.title}`));
+    const priorityTag = li.appendChild(createCardElement("span", `${newTodo.priority}`));
+    priorityTag.setAttribute("aria-label", "priority");
+
+    priorityTag.classList.add("priority-tag");
+    priorityTag.classList.add(newTodo.priority.toLowerCase());
+
+    const h2 = li.appendChild(createCardElement("h2", `${newTodo.title}`));
     li.appendChild(createCardElement("span", `${newTodo.dueDate}`));
     createRemoveBtn(li, newTodo);
-    span.addEventListener("click", event => { openDialog(event), createTodoCard(newTodo) });
+    h2.setAttribute("tabindex", "0");
+    h2.setAttribute("aria-label", `See and edit ${newTodo.title}`);
+    h2.addEventListener("click", event => { openDialog(event), createTodoCard(newTodo) });
 }
 
 function toggleTodo(todo) {
@@ -167,7 +191,11 @@ function sortTodos(array) {
 }
 
 function createRemoveBtn(li, todo) {
-    const btnRemove = createCardElement("button", "Remove Todo");
+    const btnRemove = createCardElement("button");
+    btnRemove.type = "button";
+    const span = createCardElement("span", `Delete ${todo.title}`);
+    btnRemove.appendChild(span);
+    span.classList.add("visually-hidden");
     li.appendChild(btnRemove);
     btnRemove.addEventListener("click", function () { removeTodo(li, todo) });
 }
@@ -252,7 +280,7 @@ function createForm(todo) {
     modal.appendChild(form);
 
     const title = new FormElements("label", "Todo Title", "title", "input", "text", "title");
-    const desc = new FormElements("label", "Description", "desc", "input", "text", "desc");
+    const desc = new FormElements("label", "Description", "desc", "textarea", "", "desc");
     const date = new FormElements("label", "Due Date", "date", "input", "date", "date");
     const priority = new FormElements("label", "Priority", "priority", "select", "", "priority");
     const category = new FormElements("label", "Category", "category", "select", "", "category");
@@ -297,6 +325,7 @@ function createAddBtn(form) {
         ul.replaceChildren();
 
         showTodos();
+        closeDialog(event);
     });
 }
 
@@ -334,7 +363,7 @@ class Todo {
 }
 
 let categories = ["Personal", "Work"]
-const priorites = ["No priority", "Low", "Medium", "High"]
+const priorites = ["None", "Low", "Medium", "High"]
 
 function addTodotoArray(title, desc, dueDate, priority, category) {
     const newTodo = new Todo(title, desc, dueDate, priority, category);
@@ -353,8 +382,8 @@ function listToOption(list, id) {
 }
 
 //Elemento di prova
-addTodotoArray("Prova", "descrizione", "2023-12-01", "alta", "Personal");
-addTodotoArray("Prova3", "descrizione", "2023-10-23", "alta", "Work");
+addTodotoArray("Un titolo piuttosto lungo da scrivere per vedere come funziona", "descrizione", "2023-12-01", "None", "Personal");
+addTodotoArray("Prova3", "descrizione", "2023-10-23", "None", "Work");
 addTodotoArray("Prova5", "descrizione", "2023-10-23", "High", "Work", false);
 
 showTodos();
