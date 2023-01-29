@@ -48,7 +48,11 @@ function printCategories() {
     const ul = modal.appendChild(document.createElement("ul"));
 
     categories.map(category => {
-        const li = ul.appendChild(createCardElement("li", `${category}`));
+        const li = ul.appendChild(document.createElement("li"));
+        const h3 = li.appendChild(createCardElement("h3", `${category}`));
+        h3.setAttribute("tabindex", "0");
+        h3.setAttribute("type", "button");
+        h3.addEventListener("click", event => { });
         createRemoveBtn(li, category);
     });
     const p = createCardElement("p", "Deleting a category deletes all the todos associated with the category!");
@@ -176,6 +180,8 @@ function todoHome(newTodo) {
     li.appendChild(createCardElement("span", `${newTodo.dueDate}`));
     createRemoveBtn(li, newTodo);
     h2.setAttribute("tabindex", "0");
+    h2.setAttribute("type", "button");
+
     h2.setAttribute("aria-label", `See and edit ${newTodo.title}`);
     h2.addEventListener("click", event => { openDialog(event), createTodoCard(newTodo) });
 }
@@ -246,6 +252,7 @@ function createSaveBtn(todo, form) {
     form.appendChild(saveBtn);
 
     saveBtn.addEventListener("click", event => {
+        const date = document.querySelector("#date");
         todo.editTodo(title.value, desc.value, date.value, priority.value, category.value);
         closeDialog(event);
         ul.replaceChildren();
@@ -331,6 +338,12 @@ function createForm(todo) {
     listToOption(priorites, "#priority");
     listToOption(categories, "#category");
 
+    const dateField = document.querySelector("#date");
+    dateField.addEventListener('input', function () {
+        let date = dateField.valueAsDate;
+        return date;
+    });
+
     if (modal.classList.contains("add")) {
         h2.textContent = "Add a New Todo";
         createAddBtn(form);
@@ -357,6 +370,7 @@ function createAddBtn(form) {
 
     btnAddTodo.addEventListener("click", event => {
         event.preventDefault();
+        const date = document.querySelector("#date");
         const newTodo = addTodotoArray(title.value, desc.value, date.value, priority.value, category.value);
         todoHome(newTodo);
 
@@ -381,7 +395,7 @@ class Todo {
     constructor(title, desc, dueDate, priority, category) {
         this.title = title;
         this.desc = desc;
-        this.dueDate = dueDate;
+        this.dueDate = dueDate || "No Due Date";
         this.priority = priority;
         this.category = category;
         this.status = false;
@@ -395,7 +409,7 @@ class Todo {
     editTodo(title, desc, dueDate, priority, category) {
         this.title = title;
         this.desc = desc;
-        this.dueDate = dueDate;
+        this.dueDate = dueDate || "No Due Date";
         this.priority = priority;
         this.category = category;
     }

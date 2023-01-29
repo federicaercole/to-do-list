@@ -41,7 +41,7 @@ h1 {
 .modal {
     display: flex;
     flex-direction: column;
-    width: 450px;
+    max-width: 450px;
     padding: 2rem;
     position: absolute;
     left: calc(50vw - 225px);
@@ -54,7 +54,7 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 4fr;
     align-items: center;
-    row-gap: 20px;
+    gap: 10px;
 }
 
 .modal h2 {
@@ -124,7 +124,8 @@ h1 {
 }
 
 .categories button,
-.modal button {
+form>button,
+.modal>button {
     border: 0;
     border-radius: 20px;
     border: 2px dashed var(--accent-color);
@@ -145,7 +146,7 @@ h1 {
 }
 
 .todo-container {
-    width: 700px;
+    max-width: 700px;
     margin: 0 auto;
     padding: 30px;
 }
@@ -159,14 +160,16 @@ li {
     padding: 30px 0;
 }
 
-li h2 {
+li h2,
+li h3 {
     cursor: pointer;
     display: flex;
     align-self: center;
     padding: 5px;
 }
 
-li h2::after {
+li h2::after,
+li h3::after {
     content: "";
     background-image: url("images/pencil.svg");
     background-position: 50% 50%;
@@ -177,7 +180,30 @@ li h2::after {
     padding-right: 20px;
 }
 
-li h2:hover {
+.modal li {
+    grid-template-columns: 1fr 0.1fr;
+    grid-template-rows: 1fr;
+    padding: 10px 0;
+}
+
+li h3 {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 1.7rem;
+    margin-left: 10px;
+}
+
+.modal li h3+button {
+    grid-row: 1;
+    grid-column: 2/3;
+    border: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+li h2:hover,
+li h3:hover {
     background-color: var(--primary-color);
 }
 
@@ -226,7 +252,9 @@ li button {
 }
 
 li button:hover,
-li button:active {
+li button:active,
+.modal li h3+button:hover,
+.modal li h3+button:active {
     background-color: var(--primary-color);
     border-color: var(--accent-color);
 
@@ -307,6 +335,7 @@ select {
     padding: 20px;
     border-radius: 50%;
     border: 2px solid var(--primary-color);
+    background-color: transparent;
 }
 
 .modal .close:hover,
