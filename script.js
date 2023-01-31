@@ -1,7 +1,82 @@
 //validazione form e messaggi di conferma
+const todoApp = (function () {
+    let todos = [];
+    let filteredTodos = [];
+    let categories = ["Personal", "Work"];
+    class Todo {
+        constructor(title, desc, dueDate, priority, category) {
+            this.title = title;
+            this.desc = desc;
+            this.dueDate = dueDate || "No Due Date";
+            this.priority = priority;
+            this.category = category;
+            this.status = false;
+        }
 
-let todos = [];
-let filteredTodos = [];
+        toggleStatus() {
+            this.status = !this.status;
+            return this.status;
+        }
+
+        editTodo(title, desc, dueDate, priority, category) {
+            this.title = title;
+            this.desc = desc;
+            this.dueDate = dueDate || "No Due Date";
+            this.priority = priority;
+            this.category = category;
+        }
+    }
+
+    function addTodotoArray(title, desc, dueDate, priority, category) {
+        const newTodo = new Todo(title, desc, dueDate, priority, category);
+        todos.push(newTodo);
+        return newTodo;
+    }
+
+    function sortTodos(array) {
+        array.sort((a, b) => {
+            if ((a.dueDate === b.dueDate) && a.status !== true && b.status !== true) {
+                return 0;
+            } else if ((a.dueDate > b.dueDate) && a.status !== true && b.status !== true) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+        return array;
+    }
+
+    function toggleTodo(todo, array) {
+        todo.toggleStatus();
+        array.splice(array.indexOf(todo), 1);
+        if (todo.status) {
+            array.push(todo);
+        } else {
+            array.unshift(todo);
+        }
+    }
+
+    function addNewCategory(cat) {
+        categories.push(cat);
+        return categories;
+    }
+
+    //Elementi di prova
+    const date = new Date();
+    addTodotoArray("Click on todo title to see it and edit it", "This is the description of the todo. Try to edit this todo clicking the 'Edit todo' button", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+    addTodotoArray("Click on the X button to delete it", "If you delete a todo it is gone forever!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+    addTodotoArray("How to navigate the interface", "On the top of the page you have buttons to add a new todo, add a new category and edit categories. With the buttons in the next row you can filter your todos from different categories.", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+    addTodotoArray("Click on the checkbox to mark a todo done", "Congratulations, you finished this tutorial!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
+
+    return { todos, filteredTodos, categories, addTodotoArray, Todo, toggleTodo, addNewCategory, sortTodos }
+})();
+
+function showTodos(array = todoContainer.classList.contains("filtered") ? todoApp.filteredTodos : todoApp.todos) {
+    todoApp.sortTodos(array);
+    array.map(element => createTodoListPage(element));
+}
+
+const priorites = ["None", "Low", "Medium", "High"];
 
 class FormElements {
     constructor(element, textLabel, forLabel, input, type, id) {
@@ -15,18 +90,33 @@ class FormElements {
 }
 
 // class Buttons {
-//     constructor(element, textButton, type) {
+//     constructor(element, textButton, type, class) {
 //         this.element = element;
 //         this.textButton = textButton;
 //         this.type = type;
+//         this.class = class;
 //     }
 // }
+
+function updatePage(element) {
+    element.replaceChildren();
+    showTodos();
+}
+
+const pageDOM = (function () {
+
+})();
+
+const modalDOM = (function () {
+
+})();
 
 //DOM Stuff
 const newTodobtn = document.querySelector(".new-todo");
 const newCatbtn = document.querySelector(".new-category");
 const todoContainer = document.querySelector(".todo-container");
 const ul = document.querySelector(".todo-container ul");
+
 const body = document.querySelector("body");
 const modal = document.createElement("div");
 modal.setAttribute("class", "modal");
@@ -39,16 +129,16 @@ const editCatBtn = document.querySelector(".edit-category");
 editCatBtn.addEventListener("click", event => {
     openDialog(event);
     modal.classList.add("edit");
-    printCategories();
+    showCategories();
 });
 
-function printCategories() {
-    modal.appendChild(createCardElement("h2", "Edit or delete categories"));
+function showCategories() {
+    modal.appendChild(createDOMElement("h2", "Edit or delete categories"));
     const ul = modal.appendChild(document.createElement("ul"));
 
     categories.map(category => {
         const li = ul.appendChild(document.createElement("li"));
-        const h3 = li.appendChild(createCardElement("h3", `${category}`));
+        const h3 = li.appendChild(createDOMElement("h3", `${category}`));
         h3.setAttribute("tabindex", "0");
         h3.setAttribute("type", "button");
         h3.addEventListener("click", event => {
@@ -61,14 +151,14 @@ function printCategories() {
         });
         createRemoveBtn(li, category);
     });
-    const p = createCardElement("p", "Deleting a category deletes all the todos associated with the category!");
+    const p = createDOMElement("p", "Deleting a category deletes all the todos associated with the category!");
     ul.insertAdjacentElement('afterend', p);
 }
 
 function transformCatToInput(event, h3, li) {
     const title = h3.textContent;
     event.target.remove();
-    const label = createCardElement("label", title);
+    const label = createDOMElement("label", title);
     label.setAttribute("class", "visually-hidden");
     label.setAttribute("for", title);
     const input = document.createElement("input", title);
@@ -87,7 +177,7 @@ newCatbtn.addEventListener("click", event => {
 });
 
 function createFormCategory() {
-    modal.appendChild(createCardElement("h2", "Add a New Category"));
+    modal.appendChild(createDOMElement("h2", "Add a New Category"));
 
     const form = document.createElement("form");
     modal.appendChild(form);
@@ -101,26 +191,21 @@ function createFormCategory() {
 };
 
 function createNewCategoryBtn(form) {
-    const btnAddCat = form.appendChild(createCardElement("button", "Add Category"));
+    const btnAddCat = form.appendChild(createDOMElement("button", "Add Category"));
     btnAddCat.type = "submit";
 
     btnAddCat.addEventListener("click", event => {
         event.preventDefault();
-        addNewCategory(document.querySelector("#new-category").value);
+        todoApp.addNewCategory(document.querySelector("#new-category").value);
         closeDialog(event);
         categoriesHTML.replaceChildren();
-        showCategories();
+        createBtnCategories();
     });
 
 }
 
-function addNewCategory(cat) {
-    categories.push(cat);
-    return categories;
-}
-
-function showCategories() {
-    const allProjects = categoriesHTML.appendChild(createCardElement("button", "All projects"));
+function createBtnCategories() {
+    const allProjects = categoriesHTML.appendChild(createDOMElement("button", "All projects"));
     allProjects.type = "button";
     allProjects.classList.add("active");
 
@@ -128,23 +213,21 @@ function showCategories() {
         todoContainer.classList.remove("filtered");
         resetButtonStatus();
         allProjects.classList.add("active");
-        ul.replaceChildren();
-        showTodos();
+        updatePage(ul);
     })
 
-    categories.map(category => {
-        const catBtn = categoriesHTML.appendChild(createCardElement("button", `${category}`));
+    todoApp.categories.map(category => {
+        const catBtn = categoriesHTML.appendChild(createDOMElement("button", `${category}`));
         catBtn.type = "button";
 
         catBtn.addEventListener("click", event => {
-            resetButtonStatus();
-            filteredTodos = todos.filter(todo => {
+            todoApp.filteredTodos = todoApp.todos.filter(todo => {
                 return todo.category === event.target.textContent;
             });
-            ul.replaceChildren();
+            resetButtonStatus();
             todoContainer.classList.add("filtered");
             event.target.classList.add("active");
-            showTodos();
+            updatePage(ul);
         });
     });
 
@@ -155,22 +238,22 @@ function resetButtonStatus() {
     buttons.forEach(button => button.classList.remove("active"));
 }
 
-function createCardElement(el, content) {
+function createDOMElement(el, content) {
     const element = document.createElement(el);
     element.textContent = content;
     return element;
 }
 
 function createTodoCard(newTodo) {
-    modal.appendChild(createCardElement("h2", `${newTodo.title}`));
-    modal.appendChild(createCardElement("p", `${newTodo.desc}`));
-    modal.appendChild(createCardElement("p", `Due Date: ${newTodo.dueDate}`));
-    modal.appendChild(createCardElement("p", `Priority: ${newTodo.priority}`));
-    modal.appendChild(createCardElement("p", `Category: ${newTodo.category}`));
+    modal.appendChild(createDOMElement("h2", `${newTodo.title}`));
+    modal.appendChild(createDOMElement("p", `${newTodo.desc}`));
+    modal.appendChild(createDOMElement("p", `Due Date: ${newTodo.dueDate}`));
+    modal.appendChild(createDOMElement("p", `Priority: ${newTodo.priority}`));
+    modal.appendChild(createDOMElement("p", `Category: ${newTodo.category}`));
     createEditBtn(newTodo);
 }
 
-function todoHome(newTodo) {
+function createTodoListPage(newTodo) {
     const li = document.createElement("li");
     ul.appendChild(li);
 
@@ -184,20 +267,19 @@ function todoHome(newTodo) {
         li.setAttribute("class", "checked");
     }
 
-    checkbox.addEventListener("change", (event) => {
-        toggleTodo(newTodo, event, li);
-        ul.replaceChildren();
-        showTodos();
+    checkbox.addEventListener("change", () => {
+        todoApp.toggleTodo(newTodo, todoContainer.classList.contains("filtered") ? todoApp.filteredTodos : todoApp.todos);
+        updatePage(ul);
     });
 
-    const priorityTag = li.appendChild(createCardElement("span", `${newTodo.priority}`));
+    const priorityTag = li.appendChild(createDOMElement("span", `${newTodo.priority}`));
     priorityTag.setAttribute("aria-label", "priority");
 
     priorityTag.classList.add("priority-tag");
     priorityTag.classList.add(newTodo.priority.toLowerCase());
 
-    const h2 = li.appendChild(createCardElement("h2", `${newTodo.title}`));
-    li.appendChild(createCardElement("span", `${newTodo.dueDate}`));
+    const h2 = li.appendChild(createDOMElement("h2", `${newTodo.title}`));
+    li.appendChild(createDOMElement("span", `${newTodo.dueDate}`));
     createRemoveBtn(li, newTodo);
     h2.setAttribute("tabindex", "0");
     h2.setAttribute("type", "button");
@@ -206,41 +288,10 @@ function todoHome(newTodo) {
     h2.addEventListener("click", event => { openDialog(event), createTodoCard(newTodo) });
 }
 
-function toggleTodo(todo) {
-    todo.toggleStatus();
-    if (todoContainer.classList.contains("filtered")) {
-        filteredTodos.splice(filteredTodos.indexOf(todo), 1);
-        if (todo.status) {
-            filteredTodos.push(todo);
-        } else {
-            filteredTodos.unshift(todo);
-        }
-    } else {
-        todos.splice(todos.indexOf(todo), 1);
-        if (todo.status) {
-            todos.push(todo);
-        } else {
-            todos.unshift(todo);
-        }
-    }
-}
-
-function sortTodos(array) {
-    array.sort((a, b) => {
-        if ((a.dueDate === b.dueDate) && a.status !== true && b.status !== true) {
-            return 0;
-        } else if ((a.dueDate > b.dueDate) && a.status !== true && b.status !== true) {
-            return 1;
-        } else {
-            return -1;
-        }
-    })
-}
-
 function createDeleteActionBtn(element) {
-    const btnDelete = createCardElement("button");
+    const btnDelete = createDOMElement("button");
     btnDelete.type = "button";
-    const span = createCardElement("span", `Don't edit category`);
+    const span = createDOMElement("span", `Don't edit category`);
     btnDelete.appendChild(span);
     span.classList.add("visually-hidden");
     element.insertAdjacentElement("afterend", btnDelete);
@@ -249,14 +300,14 @@ function createDeleteActionBtn(element) {
         modal.replaceChildren();
         openDialog(event);
         modal.classList.add("edit");
-        printCategories();
+        showCategories();
     });
 }
 
 function createRemoveBtn(li, element) {
-    const btnRemove = createCardElement("button");
+    const btnRemove = createDOMElement("button");
     btnRemove.type = "button";
-    const span = createCardElement("span", `Delete ${element.title || element}`);
+    const span = createDOMElement("span", `Delete ${element.title || element}`);
     btnRemove.appendChild(span);
     span.classList.add("visually-hidden");
     li.appendChild(btnRemove);
@@ -266,7 +317,7 @@ function createRemoveBtn(li, element) {
 }
 
 function createEditBtn(todo) {
-    const btnEdit = modal.appendChild(createCardElement("button", "Edit Todo"));
+    const btnEdit = modal.appendChild(createDOMElement("button", "Edit Todo"));
     btnEdit.addEventListener("click", () => {
         modal.replaceChildren();
         createCloseBtn();
@@ -276,7 +327,7 @@ function createEditBtn(todo) {
 }
 function printExistentInputs(todo) {
     const date = document.querySelector("#date");
-    const splitDate = todo.dueDate.split("-");
+    let splitDate = todo.dueDate.split("-");
     const stringDate = `${splitDate[2]}-${splitDate[1].padStart(2, 0)}-${splitDate[0]}`;
 
     title.value = todo.title;
@@ -292,7 +343,7 @@ function createSaveBtn(array, element, cat) {
     saveBtn.type = "submit";
     if (modal.classList.contains("edit")) {
         element.insertAdjacentElement("afterend", saveBtn);
-        const span = saveBtn.appendChild(createCardElement("span", "Save category"));
+        const span = saveBtn.appendChild(createDOMElement("span", "Save category"));
         span.classList.add("visually-hidden");
         saveBtn.classList.add("save");
     } else {
@@ -318,10 +369,10 @@ function createSaveBtn(array, element, cat) {
             modal.replaceChildren();
             openDialog(event);
             modal.classList.add("edit");
-            printCategories();
+            showCategories();
 
             categoriesHTML.replaceChildren();
-            showCategories();
+            createBtnCategories();
 
             ul.replaceChildren();
             showTodos();
@@ -342,7 +393,7 @@ function createCloseBtn() {
     closeBtn.setAttribute("class", "close");
     modal.appendChild(closeBtn);
 
-    const span = closeBtn.appendChild(createCardElement("span", "Close"));
+    const span = closeBtn.appendChild(createDOMElement("span", "Close"));
     span.setAttribute("class", "visually-hidden");
 
     closeBtn.addEventListener("click", event => { closeDialog(event) });
@@ -361,25 +412,12 @@ function removeElement(li, element, array) {
                 return item !== todosWithCategory[i];
             });
         }
-        ul.replaceChildren();
-        showTodos();
+        updatePage(ul);
         categoriesHTML.replaceChildren();
-        showCategories();
+        createBtnCategories();
     }
 }
 
-function showTodos() {
-    if (todoContainer.classList.contains("filtered")) {
-        sortTodos(filteredTodos);
-        filteredTodos.map(element => todoHome(element));
-    }
-    else {
-        sortTodos(todos);
-        todos.map(element => todoHome(element));
-    }
-}
-
-//Evento al bottone per scrivere una nuova nota
 newTodobtn.addEventListener("click", event => {
     modal.classList.add("add");
     openDialog(event);
@@ -430,7 +468,7 @@ function createForm(todo) {
 }
 
 function createFormElement(element, form) {
-    const label = form.appendChild(createCardElement(`${element.element}`, `${element.textLabel}`));
+    const label = form.appendChild(createDOMElement(`${element.element}`, `${element.textLabel}`));
     label.setAttribute("for", `${element.forLabel}`);
 
     const input = document.createElement(`${element.input}`);
@@ -441,14 +479,14 @@ function createFormElement(element, form) {
 }
 
 function createAddBtn(form) {
-    const btnAddTodo = form.appendChild(createCardElement("button", "Add Todo"));
+    const btnAddTodo = form.appendChild(createDOMElement("button", "Add Todo"));
     btnAddTodo.type = "submit";
 
     btnAddTodo.addEventListener("click", event => {
         event.preventDefault();
         const date = document.querySelector("#date");
         const newTodo = addTodotoArray(title.value, desc.value, date.value, priority.value, category.value);
-        todoHome(newTodo);
+        createTodoListPage(newTodo);
 
         ul.replaceChildren();
 
@@ -466,40 +504,6 @@ function closeDialog(event) {
     body.removeChild(overlay);
 }
 
-//Struttura di un todo
-class Todo {
-    constructor(title, desc, dueDate, priority, category) {
-        this.title = title;
-        this.desc = desc;
-        this.dueDate = dueDate || "No Due Date";
-        this.priority = priority;
-        this.category = category;
-        this.status = false;
-    }
-
-    toggleStatus() {
-        this.status = !this.status;
-        return this.status;
-    }
-
-    editTodo(title, desc, dueDate, priority, category) {
-        this.title = title;
-        this.desc = desc;
-        this.dueDate = dueDate || "No Due Date";
-        this.priority = priority;
-        this.category = category;
-    }
-}
-
-let categories = ["Personal", "Work"]
-const priorites = ["None", "Low", "Medium", "High"]
-
-function addTodotoArray(title, desc, dueDate, priority, category) {
-    const newTodo = new Todo(title, desc, dueDate, priority, category);
-    todos.push(newTodo);
-    return newTodo;
-}
-
 function listToOption(list, id) {
     list.map(element => {
         const option = document.createElement("option");
@@ -509,12 +513,6 @@ function listToOption(list, id) {
         select.appendChild(option);
     });
 }
-const date = new Date();
-//Elemento di prova
-addTodotoArray("Click on todo title to see it and edit it", "This is the description of the todo. Try to edit this todo clicking the 'Edit todo' button", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
-addTodotoArray("Click on the X button to delete it", "If you delete a todo it is gone forever!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
-addTodotoArray("How to navigate the interface", "On the top of the page you have buttons to add a new todo, add a new category and edit categories. With the buttons in the next row you can filter your todos from different categories.", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
-addTodotoArray("Click on the checkbox to mark a todo done", "Congratulations, you finished this tutorial!", `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`, "High", "Personal");
 
 showTodos();
-showCategories();
+createBtnCategories();
