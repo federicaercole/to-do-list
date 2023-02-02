@@ -1,7 +1,6 @@
-import { todos, categories, filteredTodos } from "./app";
+import { todos, categories, filteredTodos, toggleTodo } from "./app";
 import { createButton, updatePage, createDOMElement, createForm, createFormAddCategory, removeElement } from "./helpers";
 import { modal, openDialog, createTodoCard, showCategoriesModal } from "./modalDOM";
-import { format, parseISO, intlFormatDistance, isToday } from "date-fns";
 
 const newTodobtn = document.querySelector(".new-todo");
 const newCatbtn = document.querySelector(".new-category");
@@ -69,7 +68,7 @@ export function renderTodosPage(newTodo) {
     h2.setAttribute("type", "button");
     h2.setAttribute("aria-label", `See and edit ${newTodo.title}`);
 
-    li.appendChild(createDOMElement("span", `${newTodo.dueDate}`));
+    li.appendChild(createDOMElement("span", `${(newTodo.dueDate).toLocaleString().split(',')[0]}`));
     createRemoveBtn(li, newTodo);
 
     h2.addEventListener("click", event => { openDialog(event), createTodoCard(newTodo) });

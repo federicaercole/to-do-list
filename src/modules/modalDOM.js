@@ -1,7 +1,6 @@
 import { addTodotoArray, todos, categories, addNewCategory } from "./app";
 import { createDOMElement, createButton, createForm, printExistentInputs, updatePage } from "./helpers";
 import { createRemoveBtn, ul, categoriesHTML } from "./pageDOM";
-import { format, parseISO, intlFormatDistance, isToday } from "date-fns";
 
 const body = document.querySelector("body");
 export const modal = createDOMElement("div", "", "modal");
@@ -10,7 +9,7 @@ const overlay = createDOMElement("div", "", "overlay");
 export function createTodoCard(newTodo) {
     modal.appendChild(createDOMElement("h2", `${newTodo.title}`));
     modal.appendChild(createDOMElement("p", `${newTodo.desc}`));
-    modal.appendChild(createDOMElement("p", `Due Date: ${newTodo.dueDate}`));
+    modal.appendChild(createDOMElement("p", `Due Date: ${(newTodo.dueDate).toLocaleString().split(',')[0]}`));
     modal.appendChild(createDOMElement("p", `Priority: ${newTodo.priority}`));
     modal.appendChild(createDOMElement("p", `Category: ${newTodo.category}`));
     createEditBtn(newTodo);

@@ -44,11 +44,6 @@ export function createForm(todo) {
     listToOption(priorites, "#priority");
     listToOption(categories, "#category");
 
-    const date = document.querySelector("#dueDate");
-    date.addEventListener("input", function () {
-        return date.valueAsDate;
-    });
-
     modal.classList.contains("add") ? createAddBtn(form) : createSaveBtn(todo, form);
 }
 
@@ -65,9 +60,9 @@ function listToOption(list, id) {
 export function printExistentInputs(todo) {
     title.value = todo.title;
     desc.value = todo.desc;
-    dueDate.value = todo.dueDate;
     priority.value = todo.priority;
     category.value = todo.category;
+    dueDate.valueAsDate = todo.dueDate;
 }
 
 export function createButton(textButton, type, btnClass) {
