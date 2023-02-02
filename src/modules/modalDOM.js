@@ -1,6 +1,7 @@
 import { addTodotoArray, todos, categories, addNewCategory } from "./app";
 import { createDOMElement, createButton, createForm, printExistentInputs, updatePage } from "./helpers";
 import { createRemoveBtn, ul, categoriesHTML } from "./pageDOM";
+import { format, parseISO, intlFormatDistance, isToday } from "date-fns";
 
 const body = document.querySelector("body");
 export const modal = createDOMElement("div", "", "modal");
