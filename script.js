@@ -1,7 +1,5 @@
 //validazione form e messaggi di conferma
-//vedi removeelement e createsavebtn, più come aggiornare le varie categorie (cioè il corrispondente di updatepage ma per categorie)
-//ma createsavebtn e addnewtodo non si sovrappongono come funzioni?
-//nomi di funzioni e variabili varie ed eventuali
+
 const categoriesHTML = document.querySelector(".categories");
 
 const todoApp = (function () {
@@ -161,7 +159,7 @@ const helperFunctions = (function () {
 
     function updatePage(element) {
         element.replaceChildren();
-        renderTodos();
+        element === categoriesHTML ? pageDOM.createCategoriesBtn() : renderTodos();
     }
 
     function removeElement(li, element, array) {
@@ -178,8 +176,7 @@ const helperFunctions = (function () {
                 });
             }
             helperFunctions.updatePage(pageDOM.ul);
-            categoriesHTML.replaceChildren();
-            pageDOM.createBtnCategories();
+            helperFunctions.updatePage(categoriesHTML);
         }
     }
 
@@ -226,8 +223,8 @@ const modalDOM = (function () {
     //Modal's buttons for todos
 
     function createEditBtn(todo) {
-        const btnEdit = modal.appendChild(helperFunctions.createButton("Edit Todo", "button", ""));
-        btnEdit.addEventListener("click", () => {
+        const editBtn = modal.appendChild(helperFunctions.createButton("Edit Todo", "button", ""));
+        editBtn.addEventListener("click", () => {
             modal.replaceChildren();
             createCloseBtn();
             helperFunctions.createForm(todo);
@@ -236,29 +233,24 @@ const modalDOM = (function () {
     }
 
     function createAddBtn(form) {
-        const btnAddTodo = form.appendChild(helperFunctions.createButton("Add Todo", "submit", ""));
+        const addTodoBtn = form.appendChild(helperFunctions.createButton("Add Todo", "submit", ""));
 
-        btnAddTodo.addEventListener("click", event => {
+        addTodoBtn.addEventListener("click", event => {
             event.preventDefault();
-            const newTodo = todoApp.addTodotoArray(title.value, desc.value, dueDate.value, priority.value, category.value);
-            pageDOM.renderTodosPage(newTodo);
+            todoApp.addTodotoArray(title.value, desc.value, dueDate.value, priority.value, category.value);
             helperFunctions.updatePage(pageDOM.ul);
             closeDialog(event);
         });
     }
 
     function createSaveBtn(array, element, cat) {
-        const saveBtn = document.createElement("button");
+        const saveBtn = helperFunctions.createButton(modal.classList.contains("edit") ? "" : "Save", "submit", modal.classList.contains("edit") ? "save" : "");
 
-        saveBtn.type = "submit";
         if (modal.classList.contains("edit")) {
             element.insertAdjacentElement("afterend", saveBtn);
-            const span = saveBtn.appendChild(helperFunctions.createDOMElement("span", "Save category"));
-            span.classList.add("visually-hidden");
-            saveBtn.classList.add("save");
+            saveBtn.appendChild(helperFunctions.createDOMElement("span", "Save category", "visually-hidden"));
         } else {
             element.appendChild(saveBtn);
-            saveBtn.textContent = "Save";
         }
 
         saveBtn.addEventListener("click", event => {
@@ -279,11 +271,8 @@ const modalDOM = (function () {
                 modal.replaceChildren();
                 openDialog(event);
                 modal.classList.add("edit");
-                showCategories();
-
-                categoriesHTML.replaceChildren();
-                pageDOM.createBtnCategories();
-
+                showCategoriesModal();
+                helperFunctions.updatePage(categoriesHTML);
                 helperFunctions.updatePage(pageDOM.ul);
             } else {
                 array.editTodo(title.value, desc.value, dueDate.value, priority.value, category.value);
@@ -291,9 +280,10 @@ const modalDOM = (function () {
                 helperFunctions.updatePage(pageDOM.ul);
             }
         });
+        return saveBtn;
     }
 
-    function showCategories() {
+    function showCategoriesModal() {
         modal.appendChild(helperFunctions.createDOMElement("h2", "Edit or delete categories"));
         const ul = modal.appendChild(document.createElement("ul"));
 
@@ -308,7 +298,7 @@ const modalDOM = (function () {
                 transformCatToInput(event, h3, li);
                 const input = document.querySelector(`#${category}`);
                 const saveBtn = createSaveBtn(todoApp.categories, input, category);
-                createDeleteActionBtn(saveBtn);
+                createUndoBtn(saveBtn);
             });
             pageDOM.createRemoveBtn(li, category);
         });
@@ -317,27 +307,26 @@ const modalDOM = (function () {
     }
 
     function createNewCategoryBtn(form) {
-        const btnAddCat = form.appendChild(helperFunctions.createButton("Add Category", "submit", ""));
+        const addCatBtn = form.appendChild(helperFunctions.createButton("Add Category", "submit", ""));
 
-        btnAddCat.addEventListener("click", event => {
+        addCatBtn.addEventListener("click", event => {
             event.preventDefault();
             todoApp.addNewCategory(document.querySelector("#new-category").value);
             modalDOM.closeDialog(event);
-            categoriesHTML.replaceChildren();
-            pageDOM.createBtnCategories();
+            helperFunctions.updatePage(categoriesHTML);
         });
     }
 
-    function createDeleteActionBtn(element) {
-        const btnDelete = helperFunctions.createButton("", "button", "");
-        btnDelete.appendChild(helperFunctions.createDOMElement("span", `Don't edit category`, "visually-hidden"));
-        element.insertAdjacentElement("afterend", btnDelete);
+    function createUndoBtn(element) {
+        const undoBtn = helperFunctions.createButton("", "button", "");
+        undoBtn.appendChild(helperFunctions.createDOMElement("span", `Undo edit category`, "visually-hidden"));
+        element.insertAdjacentElement("afterend", undoBtn);
 
-        btnDelete.addEventListener("click", event => {
+        undoBtn.addEventListener("click", event => {
             modal.replaceChildren();
             modalDOM.openDialog(event);
             modal.classList.add("edit");
-            showCategories();
+            showCategoriesModal();
         });
     }
 
@@ -356,7 +345,7 @@ const modalDOM = (function () {
         li.appendChild(input);
     }
 
-    return { modal, openDialog, closeDialog, createTodoCard, createAddBtn, createSaveBtn, createNewCategoryBtn, showCategories };
+    return { modal, openDialog, closeDialog, createTodoCard, createAddBtn, createSaveBtn, createNewCategoryBtn, showCategoriesModal };
 })();
 
 const pageDOM = (function () {
@@ -366,17 +355,17 @@ const pageDOM = (function () {
     const ul = document.querySelector(".todo-container ul");
     const editCatBtn = document.querySelector(".edit-category");
 
-    function resetButtonStatus() {
+    function resetActiveState() {
         const buttons = document.querySelectorAll(".categories button");
         buttons.forEach(button => button.classList.remove("active"));
     }
 
-    function createBtnCategories() {
+    function createCategoriesBtn() {
         const allProjects = categoriesHTML.appendChild(helperFunctions.createButton("All projects", "button", "active"));
 
         allProjects.addEventListener("click", () => {
             todoContainer.classList.remove("filtered");
-            resetButtonStatus();
+            resetActiveState();
             allProjects.classList.add("active");
             helperFunctions.updatePage(ul);
         })
@@ -388,7 +377,7 @@ const pageDOM = (function () {
                 todoApp.filteredTodos = todoApp.todos.filter(todo => {
                     return todo.category === event.target.textContent;
                 });
-                resetButtonStatus();
+                resetActiveState();
                 todoContainer.classList.add("filtered");
                 event.target.classList.add("active");
                 helperFunctions.updatePage(ul);
@@ -446,21 +435,21 @@ const pageDOM = (function () {
     editCatBtn.addEventListener("click", event => {
         modalDOM.openDialog(event);
         modalDOM.modal.classList.add("edit");
-        modalDOM.showCategories();
+        modalDOM.showCategoriesModal();
     });
 
     function createRemoveBtn(li, element) {
-        const btnRemove = li.appendChild(helperFunctions.createButton("", "button", ""));
-        btnRemove.appendChild(helperFunctions.createDOMElement("span", `Delete ${element.title || element}`, "visually-hidden"));
+        const removeBtn = li.appendChild(helperFunctions.createButton("", "button", ""));
+        removeBtn.appendChild(helperFunctions.createDOMElement("span", `Delete ${element.title || element}`, "visually-hidden"));
 
-        btnRemove.addEventListener("click", function () {
+        removeBtn.addEventListener("click", function () {
             helperFunctions.removeElement(li, element, modalDOM.modal.classList.contains("edit") ? todoApp.categories : todoApp.todos);
         });
     }
 
-    return { todoContainer, renderTodosPage, createBtnCategories, createRemoveBtn, ul };
+    return { todoContainer, renderTodosPage, createCategoriesBtn, createRemoveBtn, ul };
 
 })();
 
 helperFunctions.renderTodos();
-pageDOM.createBtnCategories();
+pageDOM.createCategoriesBtn();
